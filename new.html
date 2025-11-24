@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>TechFest 2024 — Upgraded</title>
+
+<!-- ----------------------------- STYLES ----------------------------- -->
+<style>
+/* ---------- Reset & Base (element selector) ---------- */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; }
+body { background: linear-gradient(135deg,#667eea 0%,#764ba2 50%,#f093fb 100%); color: #111; min-height: 100vh; }
+
+/* ---------- Header & Nav (ID selector, class selectors) ---------- */
+#main-header {
+  position: sticky; top: 0; z-index: 999;
+  background: rgba(255,255,255,0.06);
+  backdrop-filter: blur(6px);
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.container { max-width: 1200px; margin: 0 auto; padding: 0 1rem; }
+
+/* navigation layout using flexbox */
+.navbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0.9rem 0;
+  gap: 1rem;
+}
+.logo { font-weight: 800; font-size: 1.25rem; letter-spacing: -0.5px;
+  background: linear-gradient(90deg,#4facfe,#00f2fe); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.nav-links { display:flex; gap:.4rem; align-items:center; list-style:none; }
+/* attribute selector for links with data-page */
+.nav-links a[data-page] {
+  color: #f8f8f8; text-decoration:none; padding:.5rem .9rem; border-radius:999px; font-weight:600; font-size:.95rem;
+  transition: transform .18s ease, background .18s ease;
+  border:2px solid transparent;
+}
+/* pseudo-class hover/focus */
+.nav-links a[data-page]:hover, .nav-links a[data-page]:focus { transform: translateY(-3px); background: rgba(255,255,255,0.06); outline: none; }
+/* active state (class applied by JS) */
+.nav-links a.active { background: linear-gradient(90deg,#4facfe,#8e54e9); color:white; box-shadow: 0 8px 24px rgba(79,172,254,0.15); }
+
+/* mobile toggle (hidden on desktop) */
+.mobile-toggle { display:none; cursor:pointer; gap:6px; flex-direction:column; }
+.mobile-toggle span { width:22px; height:3px; background:#fff; border-radius:3px; display:block; transition:all .2s; }
+
+/* ---------- Hero (pseudo-element used) ---------- */
+.hero {
+  min-height:70vh; display:flex; align-items:center; justify-content:center; text-align:center; padding:4rem 1rem;
+  position:relative; color:#fff;
+  background: linear-gradient(rgba(0,0,0,.25),rgba(0,0,0,.25)), url("https://images.unsplash.com/photo-1542736667-069246bdbc6d?w=1600&q=80") center/cover no-repeat;
+}
+.hero h1 { font-size: clamp(2rem,6vw,3.6rem); line-height:1; margin-bottom:.6rem; font-weight:900; }
+.hero p { font-size: clamp(1rem,2.2vw,1.2rem); opacity:0.95; margin-bottom:1.25rem; }
+
+/* pseudo-element underline under hero subtitle */
+.hero p::after { content:""; display:block; width:72px; height:4px; margin:1rem auto 0; border-radius:3px; background: linear-gradient(90deg,#4facfe,#8e54e9); }
+
+/* ---------- Page wrapper & simulated pages ---------- */
+.page { display:none; padding:3rem 0; }
+.page.active { display:block; animation: fadeIn .35s ease; }
+
+/* ---------- Section titles (pseudo-element) ---------- */
+.section-title { text-align:center; font-weight:800; font-size:clamp(1.25rem,2.6vw,2rem); margin-bottom:1rem; }
+.section-title::after { content:""; display:block; height:4px; width:84px; margin:.9rem auto 0; border-radius:3px; background:linear-gradient(90deg,#4facfe,#8e54e9); }
+
+/* ---------- Page layout: features use Flexbox ---------- */
+.features { display:grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap:1.25rem; margin-top:1rem; }
+.card { background: #fff; padding:1.25rem; border-radius:12px; box-shadow: 0 8px 28px rgba(2,6,23,0.06); border:1px solid rgba(15,23,42,0.03); }
+.card h3 { margin-bottom:.6rem; font-size:1.05rem; }
+.card p { color:#444; line-height:1.5; }
+
+/* ---------- Gallery: CSS Grid + data attributes usage ---------- */
+.gallery-grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(220px,1fr)); gap: 14px; margin-top:1.25rem; }
+.gallery-item { position:relative; overflow:hidden; border-radius:12px; box-shadow:0 12px 36px rgba(2,6,23,0.08); background:white; }
+.gallery-item img { width:100%; height:220px; object-fit:cover; display:block; transition:transform .45s ease; }
+.gallery-item:hover img { transform:scale(1.08); }
+.gallery-item .meta { position:absolute; left:0; right:0; bottom:0; padding:12px; background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.6) 100%); color:#fff; }
+
+/* show badge using attribute selector for items with data-featured */
+.gallery-item[data-featured="true"]::before {
+  content: "Featured"; position:absolute; top:10px; left:10px; background:#ffbe00; color:#111; padding:6px 10px; border-radius:999px; font-weight:700; font-size:.8rem;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.18);
+}
+
+/* ---------- Video section (element selector + class) ---------- */
+.video-wrap { display:flex; justify-content:center; gap:1rem; padding:1rem; }
+.video-box { width:100%; max-width:880px; border-radius:14px; overflow:hidden; box-shadow:0 18px 60px rgba(2,6,23,0.2); border:8px solid rgba(255,255,255,0.02); }
+.video-box video { width:100%; display:block; background:#000; }
+
+/* ---------- Schedule table showing box-model properties ---------- */
+.schedule { width:100%; overflow-x:auto; margin-top:1.25rem; }
+.schedule table { width:100%; border-collapse:collapse; background:#fff; border-radius:10px; overflow:hidden; box-shadow:0 12px 36px rgba(2,6,23,0.06); }
+.schedule th, .schedule td { padding:14px 12px; border-bottom:1px solid #f1f1f1; text-align:left; }
+.schedule th { background:linear-gradient(90deg,#4facfe,#8e54e9); color:#fff; font-weight:700; text-transform:uppercase; font-size:.8rem; }
+
+/* audio message container */
+.audio-section { display:flex; flex-direction:column; align-items:center; gap:.8rem; padding:1rem; }
+
+/* ---------- Contact form (attribute selector and pseudo-class for focus) ---------- */
+.contact-form { max-width:680px; margin: 0 auto; background:#fff; padding:1.25rem; border-radius:12px; box-shadow: 0 12px 36px rgba(2,6,23,0.06); }
+.contact-form input[type="text"], .contact-form input[type="email"], .contact-form textarea {
+  width:100%; padding:12px; margin-bottom:10px; border:2px solid #e8e8e8; border-radius:8px; font-size:1rem;
+}
+.contact-form input:focus, .contact-form textarea:focus { border-color:#4facfe; box-shadow: 0 8px 30px rgba(79,172,254,0.08); outline:none; }
+
+/* submit pseudo-element example: add arrow to button */
+.btn-primary { display:inline-flex; align-items:center; gap:.6rem; background:linear-gradient(90deg,#4facfe,#8e54e9); color:#fff; padding:.85rem 1.1rem; border-radius:999px; border:none; cursor:pointer; font-weight:700; }
+.btn-primary::after { content:"➜"; font-size:1rem; opacity:0.95; transform:translateX(2px); }
+
+/* ---------- Footer ---------- */
+.footer { margin-top:2rem; padding:2rem 0; background:linear-gradient(90deg,#1b2b4a,#0b1b2e); color:#ddd; border-radius:12px; }
+.footer .cols { display:grid; grid-template-columns: repeat(auto-fit, minmax(220px,1fr)); gap:12px; }
+
+/* ---------- Utilities & responsiveness ---------- */
+.row { display:flex; gap:1rem; align-items:stretch; flex-wrap:wrap; }
+.center { text-align:center; }
+
+/* small screens: mobile nav and stacked layout */
+@media (max-width:880px) {
+  .nav-links { display:none; position: absolute; top:64px; left:0; right:0; background: rgba(255,255,255,0.98); padding:1rem; flex-direction:column; gap:.5rem; border-bottom-left-radius:10px; border-bottom-right-radius:10px; }
+  .nav-links.show { display:flex; }
+  .mobile-toggle { display:flex; }
+  .hero { padding:4rem 1rem; min-height:60vh; }
+  .gallery-item img { height:180px; }
+  .video-box { max-width:100%; }
+}
+
+/* animation */
+@keyframes fadeIn { from { opacity:0; transform:translateY(6px);} to { opacity:1; transform:none; } }
+</style>
+</head>
+<body>
+
+<!-- HEADER / NAV -->
+<header id="main-header">
+  <div class="container navbar">
+    <div class="logo" aria-label="TechFest 2024">TechFest 2024</div>
+
+    <nav>
+      <div class="mobile-toggle" id="mobileToggle" aria-hidden="true" title="Menu">
+        <span></span><span></span><span></span>
+      </div>
+
+      <ul class="nav-links" id="navLinks" role="menubar" aria-label="Main menu">
+        <li><a href="#" class="nav-link active" data-page="home" role="menuitem">Home</a></li>
+        <li><a href="#" class="nav-link" data-page="events" role="menuitem">Events</a></li>
+        <li><a href="#" class="nav-link" data-page="schedule" role="menuitem">Schedule</a></li>
+        <li><a href="#" class="nav-link" data-page="gallery" role="menuitem">Gallery</a></li>
+        <li><a href="#" class="nav-link" data-page="contact" role="menuitem">Contact</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<!-- ========== PAGES (simulated single-file multi-page) ========== -->
+
+<!-- HOME -->
+<main class="page active" id="home-page">
+  <section class="hero" aria-labelledby="hero-title">
+    <div class="hero-content container">
+      <h1 id="hero-title">TechFest 2024</h1>
+      <p>Where Innovation Meets Collaboration — 3 days of workshops, contests & showcases.</p>
+      <div class="row center" style="margin-top:1.25rem;">
+        <button class="btn-primary" data-page="events">Explore Events</button>
+        <button class="btn-primary" data-page="contact" style="background:#fff;color:#334">Register</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="page-section" aria-labelledby="highlights-title">
+    <div class="container">
+      <h2 id="highlights-title" class="section-title" style="margin-bottom:.6rem;color:#fff;">Highlights — Previous Events</h2>
+
+      <!-- Video embed (requirement) -->
+      <div class="video-wrap center">
+        <div class="video-box" aria-hidden="false">
+          <video controls poster="https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=900&q=60">
+            <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" type="video/mp4">
+            Your browser does not support HTML5 video.
+          </video>
+        </div>
+      </div>
+
+      <div class="features" style="margin-top:2rem;">
+        <article class="card">
+          <h3>Workshops & Hands-on Labs</h3>
+          <p>Industry-led sessions covering AI, Web, Embedded Systems and more — practical, project-focused learning.</p>
+        </article>
+        <article class="card">
+          <h3>Hackathons & Competitions</h3>
+          <p>Team challenges across development, security and design with exciting prizes and mentorship.</p>
+        </article>
+        <article class="card">
+          <h3>Industry Talks</h3>
+          <p>Keynotes and panels featuring startup founders and technologists sharing real-world insights.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- EVENTS -->
+<section class="page" id="events-page" aria-labelledby="events-title">
+  <div class="container page-section">
+    <h2 id="events-title" class="section-title">Event Categories</h2>
+    <div class="events-grid">
+      <div class="event-card card">
+        <h3>Programming Contest</h3>
+        <p><strong>Date:</strong> March 15, 2024 • <strong>Venue:</strong> Comp Lab</p>
+        <p>Timely algorithmic challenges and real-world problem solving. Bring your laptop.</p>
+      </div>
+      <div class="event-card card">
+        <h3>Design Challenge</h3>
+        <p><strong>Date:</strong> March 16, 2024 • <strong>Venue:</strong> Design Studio</p>
+        <p>UI/UX, branding and quick-prototype tasks judged by faculty and industry mentors.</p>
+      </div>
+      <div class="event-card card">
+        <h3>AI & ML Workshop</h3>
+        <p><strong>Date:</strong> March 17, 2024 • <strong>Venue:</strong> Auditorium</p>
+        <p>Hands-on sessions for building models and production-ready pipelines.</p>
+      </div>
+      <div class="event-card card">
+        <h3>Startup Pitch</h3>
+        <p><strong>Date:</strong> March 18, 2024 • <strong>Venue:</strong> Business Center</p>
+        <p>Pitch to real investors; mentorship and incubation follow-ups for winners.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SCHEDULE -->
+<section class="page" id="schedule-page" aria-labelledby="schedule-title">
+  <div class="container page-section">
+    <h2 id="schedule-title" class="section-title">Event Schedule</h2>
+
+    <!-- Audio requirement -->
+    <div class="audio-section card" role="region" aria-label="Welcome audio">
+      <h3 style="margin-bottom:.4rem;">Welcome Message</h3>
+      <p style="opacity:.85; font-size:.95rem;">Listen to a short greeting and quick guidelines for participants.</p>
+      <audio controls class="custom-audio" preload="none">
+        <source src="https://www.soundjay.com/misc/sounds/bell-ringing-05.mp3" type="audio/mpeg">
+        Your browser does not support the audio element.
+      </audio>
+    </div>
+
+    <!-- Schedule table demonstrates box-model (padding/margins/borders) -->
+    <div class="schedule">
+      <table aria-describedby="schedule-title">
+        <thead>
+          <tr><th>Date</th><th>Time</th><th>Event</th><th>Venue</th><th>Duration</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>15 Mar 2024</td><td>09:00</td><td>Programming Contest</td><td>Lab A</td><td>9 hours</td></tr>
+          <tr><td>16 Mar 2024</td><td>10:00</td><td>Design Challenge</td><td>Design Studio</td><td>6 hours</td></tr>
+          <tr><td>17 Mar 2024</td><td>11:00</td><td>AI & ML Workshop</td><td>Auditorium</td><td>5 hours</td></tr>
+          <tr><td>18 Mar 2024</td><td>14:00</td><td>Startup Pitch</td><td>Business Center</td><td>4 hours</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- GALLERY -->
+<section class="page" id="gallery-page" aria-labelledby="gallery-title">
+  <div class="container page-section">
+    <h2 id="gallery-title" class="section-title">Event Gallery</h2>
+    <p style="text-align:center; opacity:.85; margin-bottom:1rem;">Responsive CSS Grid with image modal (data-large attribute drives modal).</p>
+
+    <div class="gallery-grid" id="galleryGrid" aria-live="polite">
+      <!-- gallery items (data-large attribute) -->
+      <div class="gallery-item" data-large="https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=1400&q=80" data-featured="true">
+        <img src="https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=800&q=60" alt="Crowd at stage">
+        <div class="meta"><strong>Opening Night</strong><div style="font-size:.9rem; opacity:.9;">Crowd & Stages</div></div>
+      </div>
+
+      <div class="gallery-item" data-large="https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=1400&q=80">
+        <img src="https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=800&q=60" alt="Speaker on stage">
+        <div class="meta"><strong>Keynote</strong><div style="font-size:.9rem; opacity:.9;">Industry Keynote</div></div>
+      </div>
+
+      <div class="gallery-item" data-large="https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=1400&q=80">
+        <img src="https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=800&q=60" alt="Students collaborating">
+        <div class="meta"><strong>Workshops</strong><div style="font-size:.9rem; opacity:.9;">Hands-on Labs</div></div>
+      </div>
+
+      <div class="gallery-item" data-large="https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=1400&q=80">
+        <img src="https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=800&q=60" alt="Hackathon">
+        <div class="meta"><strong>Hackathon</strong><div style="font-size:.9rem; opacity:.9;">Coding Marathon</div></div>
+      </div>
+    </div>
+
+    <!-- Modal (hidden initially) -->
+    <div id="imageModal" aria-hidden="true" style="display:none; position:fixed; inset:0; background:rgba(2,6,23,0.7); align-items:center; justify-content:center; z-index:2000;">
+      <button id="modalClose" style="position:absolute; right:18px; top:18px; font-size:28px; background:transparent; border:none; color:#fff; cursor:pointer;">✕</button>
+      <img id="modalImg" src="" alt="" style="max-width:92%; max-height:82%; border-radius:10px; box-shadow:0 18px 60px rgba(2,6,23,0.6);" />
+      <div id="modalCaption" style="position:absolute; bottom:40px; color:#fff; font-weight:600; font-size:1rem; text-align:center;"></div>
+    </div>
+
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section class="page" id="contact-page" aria-labelledby="contact-title">
+  <div class="container page-section">
+    <h2 id="contact-title" class="section-title">Contact & Registration</h2>
+
+    <div class="row" style="gap:1.25rem;">
+      <div style="flex:1; min-width:280px;">
+        <div class="contact-form">
+          <label for="name">Name</label>
+          <input id="name" type="text" placeholder="Your full name" required>
+
+          <label for="email">Email</label>
+          <input id="email" type="email" placeholder="you@example.com" required>
+
+          <label for="message">Message</label>
+          <textarea id="message" placeholder="Any queries"></textarea>
+
+          <button id="submitBtn" class="btn-primary" style="margin-top:.8rem;">Submit</button>
+        </div>
+      </div>
+
+      <aside style="flex:1; min-width:260px;">
+        <div class="card">
+          <h3>Venue</h3>
+          <p>Campus Main Auditorium, Tech Building</p>
+          <h3 style="margin-top:1rem;">Contact</h3>
+          <p>Email: events@techfest.edu<br>Phone: +91 98765 43210</p>
+        </div>
+      </aside>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="container">
+    <div class="cols">
+      <div>
+        <h4 style="color:#fff;">TechFest</h4>
+        <p style="opacity:.9;">Innovation • Collaboration • Impact</p>
+      </div>
+      <div>
+        <h4 style="color:#fff;">Quick Links</h4>
+        <ul style="list-style:none; margin-top:.6rem;">
+          <li><a href="#" data-page="events" style="color:#cfe9ff;">Events</a></li>
+          <li><a href="#" data-page="schedule" style="color:#cfe9ff;">Schedule</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 style="color:#fff;">Follow</h4>
+        <p style="opacity:.9;">Twitter • LinkedIn • Instagram</p>
+      </div>
+    </div>
+
+    <div class="footer-bottom center" style="margin-top:1rem; opacity:.85;">© TechFest 2024 — College Name</div>
+  </div>
+</footer>
+
+<!-- ----------------------------- SCRIPTS ----------------------------- -->
+<script>
+/* ========= Page navigation (simulated multi-page) ========= */
+const navLinks = document.querySelectorAll('.nav-link');
+const pages = {
+  home: document.getElementById('home-page'),
+  events: document.getElementById('events-page'),
+  schedule: document.getElementById('schedule-page'),
+  gallery: document.getElementById('gallery-page'),
+  contact: document.getElementById('contact-page')
+};
+
+function showPage(pageId) {
+  // hide all
+  Object.values(pages).forEach(p => p.classList.remove('active'));
+  // show requested
+  const page = pages[pageId] || pages.home;
+  page.classList.add('active');
+
+  // update nav active class
+  navLinks.forEach(a => a.classList.toggle('active', a.dataset.page === pageId));
+  // close mobile nav if open
+  navLinksUL.classList.remove('show');
+}
+
+/* nav click handlers (also for buttons with data-page) */
+document.addEventListener('click', function(e){
+  const target = e.target.closest('[data-page]');
+  if (!target) return;
+  const page = target.dataset.page;
+  if (page) {
+    e.preventDefault();
+    showPage(page);
+    // scroll top
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+});
+
+/* mobile toggle */
+const mobileToggle = document.getElementById('mobileToggle');
+const navLinksUL = document.getElementById('navLinks');
+mobileToggle.addEventListener('click', ()=> navLinksUL.classList.toggle('show'));
+
+/* update header style on scroll (pseudo-class simulation) */
+const header = document.getElementById('main-header');
+window.addEventListener('scroll', ()=> {
+  if (window.scrollY > 40) header.classList.add('scrolled');
+  else header.classList.remove('scrolled');
+});
+
+/* ========= Gallery modal (data-* attributes) ========= */
+const galleryGrid = document.getElementById('galleryGrid');
+const imageModal = document.getElementById('imageModal');
+const modalImg = document.getElementById('modalImg');
+const modalCaption = document.getElementById('modalCaption');
+const modalClose = document.getElementById('modalClose');
+
+galleryGrid && galleryGrid.addEventListener('click', function(e){
+  const item = e.target.closest('.gallery-item');
+  if (!item) return;
+  const large = item.dataset.large;
+  const caption = item.querySelector('.meta strong') ? item.querySelector('.meta strong').innerText : item.dataset.caption || '';
+  modalImg.src = large;
+  modalImg.alt = caption;
+  modalCaption.innerText = caption;
+  imageModal.style.display = 'flex';
+  imageModal.setAttribute('aria-hidden','false');
+});
+
+/* close modal */
+modalClose && modalClose.addEventListener('click', ()=> {
+  imageModal.style.display = 'none';
+  imageModal.setAttribute('aria-hidden','true');
+  modalImg.src = '';
+});
+/* close on outside click */
+imageModal && imageModal.addEventListener('click', (ev)=> {
+  if (ev.target === imageModal) {
+    imageModal.style.display = 'none';
+    imageModal.setAttribute('aria-hidden','true');
+    modalImg.src = '';
+  }
+});
+
+/* ========= Contact submit (demo only) ========= */
+document.getElementById('submitBtn').addEventListener('click', function(ev){
+  ev.preventDefault();
+  const name = document.getElementById('name').value.trim();
+  const email = document.getElementById('email').value.trim();
+  if (!name || !email) { alert('Please enter name and email.'); return; }
+  alert('Thanks ' + name + '! Your registration request has been noted.');
+  // reset
+  document.getElementById('name').value = '';
+  document.getElementById('email').value = '';
+  document.getElementById('message').value = '';
+});
+
+/* ========= Accessibility: keyboard nav for modal (Escape key) ========= */
+document.addEventListener('keydown', function(e){
+  if (e.key === 'Escape') {
+    if (imageModal.style.display === 'flex') {
+      imageModal.style.display = 'none';
+      imageModal.setAttribute('aria-hidden','true');
+      modalImg.src = '';
+    }
+  }
+});
+
+/* ========= On load: ensure nav works and close mobile nav on resize ========= */
+window.addEventListener('load', ()=> {
+  // default route
+  showPage('home');
+  // close mobile nav when resizing to desktop
+  window.addEventListener('resize', ()=> {
+    if (window.innerWidth > 880) navLinksUL.classList.remove('show');
+  });
+});
+
+/* ========= Notes =========
+ - This single file simulates multiple pages by showing/hiding <section class="page"> containers.
+ - CSS demonstrates many selector types: element, class, ID, attribute, pseudo-classes, and pseudo-elements.
+ - Box model properties (padding/margin/border) are applied across components.
+ - Flexbox & CSS Grid used for layouts and gallery.
+ - Video embedded in Home. Audio embedded in Schedule.
+ - Gallery uses data-large attributes and JS reads them to open modal.
+ - Fully responsive with a mobile nav toggle.
+ - Replace sample video/audio URLs with event media when available.
+*/
+</script>
+</body>
+</html>
